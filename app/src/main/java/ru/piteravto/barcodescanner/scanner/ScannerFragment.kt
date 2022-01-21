@@ -6,10 +6,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageCapture
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import com.google.mlkit.vision.barcode.BarcodeScanner
+import com.google.mlkit.vision.barcode.BarcodeScanning
 import ru.piteravto.barcodescanner.databinding.FragmentScannerBinding
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -21,6 +24,8 @@ class ScannerFragment : Fragment() {
     private val binding get() = _binding!!
 
     private lateinit var executor: ExecutorService
+
+    private val barcodeScanner: BarcodeScanner = BarcodeScanning.getClient()
 
 
     override fun onCreateView(
@@ -47,7 +52,7 @@ class ScannerFragment : Fragment() {
         val cameraProviderFuture =
             ProcessCameraProvider.getInstance(requireContext())
 
-        cameraProviderFuture.addListener(Runnable {
+        cameraProviderFuture.addListener({
             // Used to bind the lifecycle of cameras to the lifecycle owner
             val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
 
@@ -61,6 +66,8 @@ class ScannerFragment : Fragment() {
             // Select back camera as a default
             val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
 
+            val imageCapture = ImageCapture.Builder().build()
+
             try {
                 // Unbind use cases before rebinding
                 cameraProvider.unbindAll()
@@ -70,6 +77,8 @@ class ScannerFragment : Fragment() {
                     this, cameraSelector, preview
                 )
 
+                cameraProvider.bindToLifecycle(this, cameraSelector, imageCapture)
+
             } catch (exc: Exception) {
                 Log.e(TAG, "Use case binding failed", exc)
                 exc.printStackTrace()
@@ -77,6 +86,11 @@ class ScannerFragment : Fragment() {
 
         }, ContextCompat.getMainExecutor(requireContext()))
     }
+
+    private fun takePhoto() {
+
+    }
+
 
     override fun onDestroy() {
         super.onDestroy()
