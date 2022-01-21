@@ -57,16 +57,11 @@ class ScannerFragment : Fragment() {
             val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
 
             // Preview
-            val preview = Preview.Builder()
-                .build()
-                .also {
-                    it.setSurfaceProvider(binding.previewView.surfaceProvider)
-                }
-
-            // Select back camera as a default
-            val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+            val preview = getPreview()
 
             try {
+                // Select back camera as a default
+                val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
                 // Unbind use cases before rebinding
                 cameraProvider.unbindAll()
 
@@ -76,21 +71,8 @@ class ScannerFragment : Fragment() {
                 )
 
 
-                val imageAnalysis = ImageAnalysis.Builder()
-                    .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-                    .build()
-                imageAnalysis.setAnalyzer(executor, ImageAnalysis.Analyzer { imageProxy ->
-                    val rotationDegrees = imageProxy.imageInfo.rotationDegrees
-                    // insert your code here.
-                    Log.e(TAG, "analyze: $rotationDegrees ")
-
-
-                    // after done, release the ImageProxy object
-                    imageProxy.close()
-                })
-
+                val imageAnalysis = barcodeImageAnalysis()
                 cameraProvider.bindToLifecycle(this, cameraSelector, imageAnalysis, preview)
-
 
             } catch (exc: Exception) {
                 Log.e(TAG, "Use case binding failed", exc)
@@ -100,10 +82,27 @@ class ScannerFragment : Fragment() {
         }, ContextCompat.getMainExecutor(requireContext()))
     }
 
-    private fun takePhoto() {
-
+    /** Preview - это отображение того, что камера снимает в данный момент
+     * в layout fragment'а */
+    private fun getPreview(): Preview {
+        val preview = Preview.Builder()
+            .build()
+            .also {
+                it.setSurfaceProvider(binding.previewView.surfaceProvider)
+            }
+        return preview
     }
 
+    /** ImageAnalysis - при добавлении через ProcessCameraProvider
+     * к жизненному циклу приложения начинает с очень большой периодичностью
+     * захватывать изображение с камеры и передавать его в класс ImageAnalysis.Analyzer*/
+    private fun barcodeImageAnalysis(): ImageAnalysis {
+        val imageAnalysis = ImageAnalysis.Builder()
+            .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+            .build()
+        imageAnalysis.setAnalyzer(executor, BarcodeAnalyzer())
+        return imageAnalysis
+    }
 
     override fun onDestroy() {
         super.onDestroy()
