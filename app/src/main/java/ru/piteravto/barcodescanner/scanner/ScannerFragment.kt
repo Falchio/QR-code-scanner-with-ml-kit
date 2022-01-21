@@ -6,7 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.camera.core.CameraSelector
-import androidx.camera.core.ImageCapture
+import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
@@ -66,8 +66,6 @@ class ScannerFragment : Fragment() {
             // Select back camera as a default
             val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
 
-            val imageCapture = ImageCapture.Builder().build()
-
             try {
                 // Unbind use cases before rebinding
                 cameraProvider.unbindAll()
@@ -77,7 +75,22 @@ class ScannerFragment : Fragment() {
                     this, cameraSelector, preview
                 )
 
-                cameraProvider.bindToLifecycle(this, cameraSelector, imageCapture)
+
+                val imageAnalysis = ImageAnalysis.Builder()
+                    .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                    .build()
+                imageAnalysis.setAnalyzer(executor, ImageAnalysis.Analyzer { imageProxy ->
+                    val rotationDegrees = imageProxy.imageInfo.rotationDegrees
+                    // insert your code here.
+                    Log.e(TAG, "analyze: $rotationDegrees ")
+
+
+                    // after done, release the ImageProxy object
+                    imageProxy.close()
+                })
+
+                cameraProvider.bindToLifecycle(this, cameraSelector, imageAnalysis, preview)
+
 
             } catch (exc: Exception) {
                 Log.e(TAG, "Use case binding failed", exc)
