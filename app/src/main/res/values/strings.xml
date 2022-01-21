@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">Barcode Scanner</string>
+    <string name="app_domain" translatable="false">https://ya.ru</string>
+    <string name="you_banned_wanted_permissions">Вы запретили доступ к устройству!</string>
+    <string name="please_give_app_wanted_permissions">Для продолжения работы необходимо выдать приложению разрешение на доступ к камере и местоположению вручную, либо переустановить приложение, после чего приложение запросит необходимые разрешения снова.\nБез этого нормальная работа приложения невозможна.</string>
+    <string name="you_dont_give_wanted_permissions">Не выданы необходимые разрешения</string>
+    <string name="you_need_handle_permissions">Для работы приложения необходим доступ к камере и местоположению. \nПожалуйста разрешите доступ.</string>
+    <string name="clear_well">Понятно</string>
+    <string name="menu_settings">Настройки</string>
+    <string name="menu_main_screen">Основной экран</string>
+    <string name="menu_permission">Проверка разрешений</string>
+    <string name="enter_login">Введите логин</string>
+    <string name="enter_password">Введите пароль</string>
+    <string name="save">Сохранить</string>
+    <string name="saved">Сохранено</string>
+    <string name="menu_nfc">NFC</string>
+</resources>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mobile_navigation"
+    app:startDestination="@+id/nav_permission">
+
+    <!--    старт происходит с PermissionFragment, который запрашивает необходимые права  -->
+
+    <fragment
+        android:id="@+id/nav_scanner"
+        android:name="ru.piteravto.barcodescanner.scanner.ScannerFragment"
+        tools:layout="@layout/fragment_scanner" />
+
+
+    <fragment
+        android:id="@+id/nav_permission"
+        android:name="ru.piteravto.barcodescanner.permission.PermissionFragment"
+        tools:layout="@layout/fragment_permission" />
+</navigation>
