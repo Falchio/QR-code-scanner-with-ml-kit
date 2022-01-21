@@ -22,6 +22,7 @@ class ScannerFragment : Fragment() {
 
     private lateinit var executor: ExecutorService
 
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -44,7 +45,7 @@ class ScannerFragment : Fragment() {
 
     private fun startCamera() {
         val cameraProviderFuture =
-            ProcessCameraProvider.getInstance(requireActivity().applicationContext)
+            ProcessCameraProvider.getInstance(requireContext())
 
         cameraProviderFuture.addListener(Runnable {
             // Used to bind the lifecycle of cameras to the lifecycle owner
@@ -71,6 +72,7 @@ class ScannerFragment : Fragment() {
 
             } catch (exc: Exception) {
                 Log.e(TAG, "Use case binding failed", exc)
+                exc.printStackTrace()
             }
 
         }, ContextCompat.getMainExecutor(requireContext()))
