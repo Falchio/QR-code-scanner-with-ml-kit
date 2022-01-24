@@ -8,11 +8,10 @@ import android.view.ViewGroup
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
+import androidx.camera.core.TorchState
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import com.google.mlkit.vision.barcode.BarcodeScanner
-import com.google.mlkit.vision.barcode.BarcodeScanning
 import ru.piteravto.barcodescanner.databinding.FragmentScannerBinding
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -22,11 +21,11 @@ private const val TAG = "ScannerFragment"
 class ScannerFragment : Fragment() {
     private var _binding: FragmentScannerBinding? = null
     private val binding get() = _binding!!
+    private lateinit var boxView: Box
 
     private lateinit var executor: ExecutorService
 
-    private val barcodeScanner: BarcodeScanner = BarcodeScanning.getClient()
-
+    private var torchIsOn = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -34,18 +33,25 @@ class ScannerFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentScannerBinding.inflate(inflater, container, false)
-        binding.scan.setOnClickListener { startScan() }
         return binding.root
-    }
-
-    private fun startScan() {
-        Log.e(TAG, "startScan: ")
     }
 
     override fun onStart() {
         super.onStart()
+        boxView = Box(requireContext())
         executor = Executors.newSingleThreadExecutor()
         startCamera()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        binding.root.addView(
+            boxView,
+            ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            )
+        )
     }
 
     private fun startCamera() {
@@ -72,7 +78,29 @@ class ScannerFragment : Fragment() {
 
 
                 val imageAnalysis = barcodeImageAnalysis()
-                cameraProvider.bindToLifecycle(this, cameraSelector, imageAnalysis, preview)
+                val camera = cameraProvider.bindToLifecycle(
+                    this, cameraSelector, imageAnalysis, preview
+                )
+
+                with(camera) {
+                    if (cameraInfo.hasFlashUnit()) {
+                        binding.torch.setOnClickListener {
+                            cameraControl.enableTorch(!torchIsOn)
+                        }
+                        cameraInfo.torchState.observe(this@ScannerFragment, { torchState ->
+                            when (torchState) {
+                                TorchState.ON -> {
+                                    torchIsOn = true
+                                    binding.torch.text = "Выкл. вспышку"
+                                }
+                                TorchState.OFF -> {
+                                    torchIsOn = false
+                                    binding.torch.text = "Вкл. вспышку"
+                                }
+                            }
+                        })
+                    }
+                }
 
             } catch (exc: Exception) {
                 Log.e(TAG, "Use case binding failed", exc)

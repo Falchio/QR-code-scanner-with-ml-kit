@@ -7,6 +7,8 @@ import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
+import ru.piteravto.barcodescanner.App
+import ru.piteravto.barcodescanner.showToast
 
 private const val TAG = "BarcodeAnalyzer"
 
@@ -31,13 +33,17 @@ class BarcodeAnalyzer : ImageAnalysis.Analyzer {
 
         val result = scanner.process(barcodeImage)
             .addOnSuccessListener { barcodes ->
-                barcodes.forEach {
-                    if (it.valueType == Barcode.TYPE_TEXT) {
-                        Log.e(TAG, "analyze: ${it.displayValue}")
+                barcodes.forEach { barcode ->
+                    if (barcode.valueType == Barcode.TYPE_TEXT) {
+                        Log.e(TAG, "analyze: ${barcode.displayValue}")
+                        barcode.rawValue?.let { rawValue ->
+                            App.context.showToast(rawValue)
+                        }
                     }
                 }
             }
-        // after done, release the ImageProxy object
-        image.close()
+            .addOnCompleteListener {
+                image.close()
+            }
     }
 }
