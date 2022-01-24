@@ -22,6 +22,7 @@ class ScannerFragment : Fragment() {
     private var _binding: FragmentScannerBinding? = null
     private val binding get() = _binding!!
     private lateinit var boxView: Box
+    private val analyzer = BarcodeAnalyzer()
 
     private lateinit var executor: ExecutorService
 
@@ -41,6 +42,10 @@ class ScannerFragment : Fragment() {
         boxView = Box(requireContext())
         executor = Executors.newSingleThreadExecutor()
         startCamera()
+        analyzer.value.observe(viewLifecycleOwner, {
+            binding.root.removeView(boxView) // здесь можно считанный QR code, а так же убрать зеленый квадрат
+
+        })
     }
 
     override fun onResume() {
@@ -88,16 +93,7 @@ class ScannerFragment : Fragment() {
                             cameraControl.enableTorch(!torchIsOn)
                         }
                         cameraInfo.torchState.observe(this@ScannerFragment, { torchState ->
-                            when (torchState) {
-                                TorchState.ON -> {
-                                    torchIsOn = true
-                                    binding.torch.text = "Выкл. вспышку"
-                                }
-                                TorchState.OFF -> {
-                                    torchIsOn = false
-                                    binding.torch.text = "Вкл. вспышку"
-                                }
-                            }
+                            manageTorchState(torchState)
                         })
                     }
                 }
@@ -108,6 +104,19 @@ class ScannerFragment : Fragment() {
             }
 
         }, ContextCompat.getMainExecutor(requireContext()))
+    }
+
+    private fun manageTorchState(torchState: Int) {
+        when (torchState) {
+            TorchState.ON -> {
+                torchIsOn = true
+                binding.torch.text = "Выкл. вспышку"
+            }
+            TorchState.OFF -> {
+                torchIsOn = false
+                binding.torch.text = "Вкл. вспышку"
+            }
+        }
     }
 
     /** Preview - это отображение того, что камера снимает в данный момент
@@ -128,7 +137,7 @@ class ScannerFragment : Fragment() {
         val imageAnalysis = ImageAnalysis.Builder()
             .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
             .build()
-        imageAnalysis.setAnalyzer(executor, BarcodeAnalyzer())
+        imageAnalysis.setAnalyzer(executor, analyzer)
         return imageAnalysis
     }
 
