@@ -4,9 +4,19 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.util.AttributeSet
 import android.view.View
 
-class Box(context: Context?) : View(context) {
+/** Данное view можно просто ображать в xml разметке layout'а */
+class Box : View {
+    constructor(context: Context) : super(context)
+    constructor(context: Context, attrs: AttributeSet) : super(context, attrs)
+    constructor(context: Context, attrs: AttributeSet, defStyle: Int) : super(
+        context,
+        attrs,
+        defStyle
+    )
+
     private val paint: Paint = Paint().apply {
         style = Paint.Style.STROKE
         color = Color.GREEN
